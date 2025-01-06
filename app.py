@@ -7,6 +7,7 @@ from langchain.llms import CTransformers
 from langchain.chains import RetrievalQA
 from dotenv import load_dotenv
 from src.prompt import *
+from pinecone import Pinecone, ServerlessSpec
 import os
 
 app = Flask(__name__)
@@ -14,19 +15,36 @@ app = Flask(__name__)
 load_dotenv()
 
 PINECONE_API_KEY = os.environ.get('PINECONE_API_KEY')
-PINECONE_API_ENV = os.environ.get('PINECONE_API_ENV')
+#PINECONE_API_ENV = os.environ.get('PINECONE_API_ENV')
 
 
 embeddings = download_hugging_face_embeddings()
 
 #Initializing the Pinecone
-pinecone.init(api_key=PINECONE_API_KEY,
-              environment=PINECONE_API_ENV)
 
-index_name="medicalchatbot"
+
+# Create an instance of Pinecone with your API key
+pc = Pinecone(api_key=os.environ.get("PINECONE_API_KEY"))
+
+my_index="medicalchatbot"
+# Now proceed with creating or using indexes
+if 'my_index' not in pc.list_indexes().names():
+    pc.create_index(
+        name='my_index',
+        dimension=384,  # Use the correct dimension for your embeddings
+        metric='cosine',  # You can change the metric to 'cosine', 'dot-product', etc.
+        spec=ServerlessSpec(
+            cloud='aws',  # Specify the cloud provider (e.g., 'aws', 'gcp', 'azure')
+            region='us-east-1'  # Specify the region'
+        )
+    )
+
+
+
+
 
 #Loading the index
-docsearch=Pinecone.from_existing_index(index_name, embeddings)
+docsearch=Pinecone.from_existing_index(my_indexindex, embeddings)
 
 
 PROMPT=PromptTemplate(template=prompt_template, input_variables=["context", "question"])
