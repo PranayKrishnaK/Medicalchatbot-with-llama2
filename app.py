@@ -26,11 +26,11 @@ embeddings = download_hugging_face_embeddings()
 # Create an instance of Pinecone with your API key
 pc = Pinecone(api_key=os.environ.get("PINECONE_API_KEY"))
 
-my_index="medicalchatbot"
+myindex="medicochatbot-1"
 # Now proceed with creating or using indexes
-if 'my_index' not in pc.list_indexes().names():
+if 'myindex' not in pc.list_indexes().names():
     pc.create_index(
-        name='my_index',
+        name='myindex',
         dimension=384,  # Use the correct dimension for your embeddings
         metric='cosine',  # You can change the metric to 'cosine', 'dot-product', etc.
         spec=ServerlessSpec(
@@ -44,8 +44,7 @@ if 'my_index' not in pc.list_indexes().names():
 
 
 #Loading the index
-docsearch=Pinecone.from_existing_index(my_indexindex, embeddings)
-
+docsearch=Pinecone.Index(myindex, embeddings)
 
 PROMPT=PromptTemplate(template=prompt_template, input_variables=["context", "question"])
 
